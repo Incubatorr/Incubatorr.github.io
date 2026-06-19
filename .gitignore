@@ -1,0 +1,3 @@
+# Local agent/editor cruft — keep out of the public repo
+.claude/
+.DS_Store
