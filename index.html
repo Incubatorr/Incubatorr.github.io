@@ -2,16 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>The Incubator</title>
-  <meta name="description" content="The Incubator" />
+  <meta name="description" content="The Incubator — a place to sketch ideas." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="hero">
+  <!-- Full-screen drawing surface (transparent — sits over the background) -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Custom brush cursor: a circle the size of the current effect -->
+  <div class="brush-cursor" id="cursor"></div>
+
+  <!-- The hero stays put; you draw around it. pointer-events disabled so it never blocks the canvas -->
+  <div class="hero">
     <h1 class="title">The Incubator</h1>
-    <!-- Optional tagline — edit or delete this line -->
-    <p class="tagline">Where ideas grow up.</p>
-  </main>
+    <p class="tagline">Where ideas grow.</p>
+  </div>
+
+  <!-- Single vertical tool bar (top-left). Hover a tool to reveal its options. -->
+  <div class="palette" role="toolbar" aria-label="Drawing tools">
+    <!-- Pen → hover reveals 3 widths -->
+    <div class="tool-group" id="g-pen">
+      <button class="tool active" id="tool-pen" aria-label="Pen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21l3.5-1 11-11-2.5-2.5-11 11L3 21z"/><path d="M15 5l2.5-2.5a1.5 1.5 0 0 1 2.1 0l.4.4a1.5 1.5 0 0 1 0 2.1L17.5 7.5z"/></svg>
+      </button>
+      <div class="flyout"><div class="flyout-inner" id="widths"></div></div>
+    </div>
+
+    <!-- Eraser → hover reveals 3 widths -->
+    <div class="tool-group" id="g-eraser">
+      <button class="tool" id="tool-eraser" aria-label="Eraser">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3l5 5-9 9H7l-4-4 9-9z"/><path d="M7 17h13" stroke-width="2"/></svg>
+      </button>
+      <div class="flyout"><div class="flyout-inner" id="eraser-widths"></div></div>
+    </div>
+
+    <!-- Color → hover reveals 5 colors -->
+    <div class="tool-group" id="g-color">
+      <button class="tool" id="tool-color" aria-label="Color">
+        <span class="color-dot" id="color-dot"></span>
+      </button>
+      <div class="flyout"><div class="flyout-inner" id="swatches"></div></div>
+    </div>
+
+    <!-- Back (undo) -->
+    <div class="tool-group">
+      <button class="tool" id="undo" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7L4 12l5 5"/><path d="M4 12h11a5 5 0 0 1 0 10h-1"/></svg>
+      </button>
+    </div>
+
+    <!-- Reset (clear everything) -->
+    <div class="tool-group">
+      <button class="tool" id="reset" aria-label="Reset">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

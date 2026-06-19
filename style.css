@@ -1,5 +1,7 @@
 :root {
   --bg: #0b0c0f;
+  --panel: rgba(21, 23, 28, 0.9);
+  --line: #2a2f37;
   --fg: #f4f4f5;
   --muted: #8a8f98;
   --accent: #f5a623;
@@ -14,30 +16,60 @@
 html,
 body {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
   color: var(--fg);
-  background: radial-gradient(
-      120% 120% at 50% 0%,
-      #15171c 0%,
-      var(--bg) 55%
-    )
+  background: radial-gradient(120% 120% at 50% 0%, #15171c 0%, var(--bg) 55%)
     no-repeat;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
+/* ---------- Drawing surface (full screen, transparent) ---------- */
+#canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: none;
+  z-index: 1;
+}
+
+/* Brush-size ring cursor — outer edge matches the stroke diameter */
+.brush-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  display: none;
+  will-change: transform;
+}
+.brush-cursor.eraser {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.95);
+}
+
+/* ---------- Hero overlay (stays put, never blocks drawing) ---------- */
 .hero {
-  min-height: 100%;
+  position: fixed;
+  inset: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 2rem;
+  pointer-events: none;
+  user-select: none;
 }
 
 .title {
@@ -54,7 +86,6 @@ body {
 .tagline {
   margin-top: 1.25rem;
   font-size: clamp(0.95rem, 2.5vw, 1.25rem);
-  font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -67,4 +98,143 @@ body {
   margin: 0 auto 1.25rem;
   background: var(--accent);
   border-radius: 2px;
+}
+
+/* ---------- Vertical tool bar (top-left) ---------- */
+.palette {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.tool-group {
+  position: relative;
+  display: flex;
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #1d2027;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.05s ease;
+}
+
+.tool:hover {
+  background: #262a32;
+}
+.tool:active {
+  transform: translateY(1px);
+}
+.tool.active {
+  border-color: var(--accent);
+  background: rgba(245, 166, 35, 0.16);
+  color: var(--accent);
+}
+
+.tool svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Hover flyouts (reveal extra options to the right) ---------- */
+.flyout {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  padding-left: 8px; /* invisible bridge so the cursor can cross into it */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.tool-group:hover > .flyout,
+.tool-group:focus-within > .flyout,
+.tool-group.open > .flyout {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.flyout-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Width chips */
+.width {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 9px;
+  background: #1d2027;
+  cursor: pointer;
+  padding: 0;
+}
+.width:hover {
+  background: #262a32;
+}
+.width.active {
+  border-color: var(--accent);
+}
+.width .width-dot {
+  background: var(--fg);
+  border-radius: 50%;
+}
+
+/* Color chips */
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+.swatch.active {
+  border-color: var(--fg);
 }
